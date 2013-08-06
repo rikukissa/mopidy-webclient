@@ -41,6 +41,10 @@ class ViewModel
     @state        = ko.observable 'stopped'
     @playlists       = ko.observableArray []
     @currentPlaylist = ko.observable null
+    @currentAlbum    = ko.observable null
+    @currentAlbums   = ko.observableArray []
+    @currentArtist   = ko.observable null
+    @currentTracks   = ko.observable null
     @queuedTracks    = ko.observableArray []
     
     @searchResults =
@@ -69,7 +73,24 @@ class ViewModel
         @setView('play-queue')()
         @setScrollPosition()
     )
+  enterAlbumInfo: (album) =>
+    @currentAlbum album
+    mopidy.library.search(album: album.name, artist: @currentArtist().name)
+      .then ([fileSearch, searchResult]) =>
+        @currentTracks searchResult.tracks
+        @setView('album')()
 
+  enterArtistInfo: (artist) =>
+    @currentArtist artist
+    mopidy.library.search(artist: artist.name)
+      .then ([fileSearch, searchResult]) =>
+        @currentAlbums searchResult.albums
+        @setView('artist')()
+  
+  enterArtistAlbumInfo: (album) =>
+    @currentArtist album.artists[0]
+    @enterAlbumInfo.apply this, arguments
+  
   setScrollPosition: =>
     $currentTrack = $('#play-queue .current-track')
     return unless $currentTrack.length > 0
@@ -163,7 +184,6 @@ $ ->
   # mopidy.on(console.log.bind(console))
   mopidy.on 'event:trackPlaybackStarted', (data) ->
     viewModel.setTrack data.tl_track.track
-  
   mopidy.on 'event:playbackStateChanged', (data) ->
     viewModel.state data.new_state
 
