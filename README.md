@@ -19,7 +19,7 @@ Still needs a lot of work and is not ready for basic users.
     james
     iexplore http://localhost:9002
     
-You'll have to change the mopidy.js path **client/index.jade** and webSocketUrl in **client/js/main.coffee**
+You'll have to change the mopidy.js path in **client/index.jade** and webSocketUrl in **client/js/main.coffee**
 
 ## Technology choices
 
