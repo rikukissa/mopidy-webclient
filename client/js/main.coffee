@@ -34,14 +34,20 @@ mopidy = new Mopidy
 class ViewModel
   constructor: (@snapper) ->
     @currentTrack = ko.observable null
-    @currentView  = ko.observable "now-playing"
+    @currentView  = ko.observable "search"
+    @currentTab   = ko.observable "artists"
     @albumArt     = ko.observable null
     @loading      = ko.observable true
     @state        = ko.observable 'stopped'
     @playlists       = ko.observableArray []
     @currentPlaylist = ko.observable null
     @queuedTracks    = ko.observableArray []
-
+    
+    @searchResults =
+      artists: ko.observableArray []
+      albums: ko.observableArray []
+      tracks: ko.observableArray []
+    
     @defaultAlbumArt = "../img/domo.jpg"
   
     @searchKeyword = ko.observable ''
@@ -52,6 +58,9 @@ class ViewModel
     @currentView viewName
     @snapper.close()
     @searchKeyword ''
+
+  setTab: (tabName) => () =>
+    @currentTab tabName
 
   enterPlayQueue: =>
     @load(mopidy.tracklist.getTracks()
@@ -136,6 +145,14 @@ class ViewModel
 
   isCurrentTrack: (track) =>
     @currentTrack().uri == track.uri
+
+  submitSearch: (viewModel, event) ->
+    mopidy.library.search(any: $(event.target).val())
+      .then ([fileSearch, searchResult]) =>
+        @searchResults.artists searchResult.artists
+        @searchResults.albums searchResult.albums
+        @searchResults.tracks searchResult.tracks
+
 $ ->
   snapper = new Snap
     element: document.getElementById 'main'

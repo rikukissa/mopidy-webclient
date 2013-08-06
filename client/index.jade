@@ -36,6 +36,11 @@ html
           
           .playlist-name(data-bind='text: $data.name')  
 
+        .view-header(data-bind='css: { "header-visible": currentView() == "search"}')
+          .spotify-search
+            .search-input-wrapper
+              i.glyphicon.glyphicon-search
+              input.spotify-search-input(type='text', data-bind='event: { "change": $root.submitSearch }')
       .view.view-visible#play-queue(data-bind='css: { "view-visible": currentView() == "play-queue"}, with: queuedTracks')
         .search-panel
           .search-input-wrapper
@@ -78,6 +83,36 @@ html
           .album-art
             .album-art-cover(data-bind='style: { "background-image": $root.getAlbumBackground() }')
 
+      .view.view-visible#search(data-bind='css: { "view-visible": currentView() == "search"}')
+        .spotify-search-header
+          .spotify-search-tab
+            .spotify-search-tab-content(data-bind='click: $root.setTab("artists")')
+              i.glyphicon.glyphicon-search
+              span Artists
+          .spotify-search-tab
+            .spotify-search-tab-content(data-bind='click: $root.setTab("albums")')
+              i.glyphicon.glyphicon-search
+              span Albums
+          .spotify-search-tab
+            .spotify-search-tab-content(data-bind='click: $root.setTab("tracks")')
+              i.glyphicon.glyphicon-search
+              span Tracks
+              
+        .tab-content(data-bind='css: {"tab-content-visible": $root.currentTab() == "artists"}')
+          .list(data-bind='foreach: $root.searchResults.artists')
+                 
+        .tab-content(data-bind='css: {"tab-content-visible": $root.currentTab() == "albums"}')
+          .list(data-bind='foreach: $root.searchResults.albums')         
+        
+        .tab-content(data-bind='css: {"tab-content-visible": $root.currentTab() == "tracks"}')
+          .list(data-bind='foreach: $root.searchResults.tracks')
+            .track(data-bind='click: $root.playTrack, css: {"current-track": $root.isCurrentTrack($data)}')
+              i.glyphicon.glyphicon-play
+              .track-artist(data-bind='foreach: $data.artists')
+                // ko if: $index() == 0
+                span(data-bind='text: $data.name')
+                // /ko
+              .track-title(data-bind='text: $data.name')                  
       #footer
         .view-footer.footer-visible
           #controls
