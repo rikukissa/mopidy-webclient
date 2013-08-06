@@ -11,6 +11,7 @@ reload = require('james-reload')
   proxy: 9001
   reload: 9002
 
+
 copyFile = (file) -> james.read(file).write(file.replace('client/', 'public/'))
 
 transmogrifyCoffee = (debug) ->
@@ -18,7 +19,10 @@ transmogrifyCoffee = (debug) ->
     jquery:
       path: './client/js/vendor/jquery-1.10.1.min.js'
       exports: '$'
-
+    snap:
+      path: './client/js/vendor/snap.min.js'
+      exports: 'Snap'
+      
   bundle = james.read shim(browserify(), libs)
     .transform(coffeeify)
     .require(require.resolve('./client/js/main.coffee'), entry: true)

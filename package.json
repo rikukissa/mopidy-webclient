@@ -10,11 +10,16 @@
     "james-stylus": "0.1.x",
     "james-uglify": "0.1.x",
     "browserify-shim": "~2.0.3",
-    "james-reload": "0.0.1"
+    "james-reload": "0.0.3"
   },
   "dependencies": {
     "coffee-script": "1.6.x",
-    "node-static": "0.6.x"
+    "node-static": "0.6.x",
+    "q": "~0.9.6",
+    "underscore": "~1.5.1",
+    "knockout": "~2.3.0",
+    "knockout-mapping": "~2.3.2",
+    "fastclick": "~0.6.9"
   },
   "scripts": {
     "start": "coffee server/server.coffee"

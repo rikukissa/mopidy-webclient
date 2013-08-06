@@ -1,8 +1,80 @@
 doctype 5
 html
   head
-    title James Browserify Project Template
+    title Domo the awesome music player
     link(rel='stylesheet', href='css/style.css')
+    meta(name='viewport', content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no')
+    meta(name='apple-mobile-web-app-capable', content='yes')      
+    script(src='http://musicbox.local/mopidy/mopidy.min.js')
     script(src='js/bundle.js')
   body
-    h1 Hello world!
+    #sidebar
+      ul.navigation
+        li.navigation-btn(data-bind='css: {"navigation-btn-selected": currentView() == "now-playing"}, click: setView("now-playing")') 
+          span Now playing
+        li.navigation-btn(data-bind='css: {"navigation-btn-selected": currentView() == "play-queue"}, click: enterPlayQueue')  
+          span Play Queue
+        li.navigation-btn(data-bind='css: {"navigation-btn-selected": currentView() == "playlists"}, click: setView("playlists")') 
+          span Playlists
+        li.navigation-btn(data-bind='css: {"navigation-btn-selected": currentView() == "search"}, click: setView("search")')  
+          span Search
+
+    #main
+      #header
+        .sidebar-btn(data-bind='click: $root.toggleSidebar')
+          i.glyphicon.glyphicon-align-justify
+
+        .view-header(data-bind='css: { "header-visible": currentView() == "now-playing" || currentView() == "play-queue" || currentView() == "playlists"}')
+          .track-info(data-bind='with: currentTrack, click: setView("now-playing")')
+            .track-info-item.track-info-title(data-bind='text: $data.name')
+            .track-info-item.track-info-artist(data-bind='foreach: $data.artists')
+              // ko if: $index() == 0
+              span(data-bind='text: $data.name')
+              // /ko
+        .view-header(data-bind='css: { "header-visible": currentView() == "playlist"}, with: currentPlaylist')
+          .playlist-name(data-bind='text: $data.name')  
+
+      .view.view-visible#play-queue(data-bind='css: { "view-visible": currentView() == "play-queue"}, with: queuedTracks')
+        .playlist-tracks(data-bind='foreach: $data')
+          .track(data-bind='click: $root.playTrack, css: {"current-track": $root.isCurrentTrack($data)}')
+            i.glyphicon.glyphicon-play
+            .track-artist(data-bind='foreach: $data.artists')
+              // ko if: $index() == 0
+              span(data-bind='text: $data.name')
+              // /ko
+            .track-title(data-bind='text: $data.name')
+        
+      .view.view-visible#playlist(data-bind='css: { "view-visible": currentView() == "playlist"}, with: currentPlaylist')
+        .playlist-tracks(data-bind='foreach: $data.tracks')
+          .track(data-bind='click: $root.playTrack, css: {"current-track": $root.isCurrentTrack($data)}')
+            i.glyphicon.glyphicon-play
+            .track-artist(data-bind='foreach: $data.artists')
+              // ko if: $index() == 0
+              span(data-bind='text: $data.name')
+              // /ko
+            .track-title(data-bind='text: $data.name')
+
+      .view.view-visible#playlists(data-bind='css: { "view-visible": currentView() == "playlists"}')
+        .playlists(data-bind='foreach: playlists')
+          .playlist(data-bind='text: $data.name, click: $root.openPlaylist')
+
+      .view.view-visible#now-playing(data-bind='css: { "view-visible": currentView() == "now-playing"}')
+        .now-playing(data-bind='with: $root.currentTrack')
+          .album-art
+            .album-art-cover(data-bind='style: { "background-image": $root.getAlbumBackground() }')
+
+      #footer
+        .view-footer.footer-visible
+          //- (data-bind='css: { "footer-visible": currentView() == "now-playing"}')
+          #controls
+            .controls
+              .control-btn(data-bind='click: $root.playPrevious')
+                i.glyphicon.glyphicon-step-backward
+              .control-btn
+                i.glyphicon.glyphicon-play
+              .control-btn(data-bind='click: $root.playNext')
+                i.glyphicon.glyphicon-step-forward
+        
+    #loading(data-bind='css: { "loader-visible": loading }')
+      .loader
+        .loader-ball
