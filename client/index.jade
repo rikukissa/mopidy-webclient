@@ -32,10 +32,16 @@ html
               span(data-bind='text: $data.name')
               // /ko
         .view-header(data-bind='css: { "header-visible": currentView() == "playlist"}, with: currentPlaylist')
+          
           .playlist-name(data-bind='text: $data.name')  
 
       .view.view-visible#play-queue(data-bind='css: { "view-visible": currentView() == "play-queue"}, with: queuedTracks')
-        .playlist-tracks(data-bind='foreach: $data')
+        .search-panel
+          .search-input-wrapper
+            i.glyphicon.glyphicon-search
+            input.search-input(type='text', data-bind='event: { "keyup": $root.setSearchKeyword }')        
+
+        .list(data-bind='foreach: $root.filterData($data)')
           .track(data-bind='click: $root.playTrack, css: {"current-track": $root.isCurrentTrack($data)}')
             i.glyphicon.glyphicon-play
             .track-artist(data-bind='foreach: $data.artists')
@@ -45,7 +51,11 @@ html
             .track-title(data-bind='text: $data.name')
         
       .view.view-visible#playlist(data-bind='css: { "view-visible": currentView() == "playlist"}, with: currentPlaylist')
-        .playlist-tracks(data-bind='foreach: $data.tracks')
+        .search-panel
+          .search-input-wrapper
+            i.glyphicon.glyphicon-search
+            input.search-input(type='text', data-bind='event: { "keyup": $root.setSearchKeyword }')
+        .list(data-bind='foreach: $root.filterData($data.tracks)')
           .track(data-bind='click: $root.playTrack, css: {"current-track": $root.isCurrentTrack($data)}')
             i.glyphicon.glyphicon-play
             .track-artist(data-bind='foreach: $data.artists')
@@ -55,7 +65,11 @@ html
             .track-title(data-bind='text: $data.name')
 
       .view.view-visible#playlists(data-bind='css: { "view-visible": currentView() == "playlists"}')
-        .playlists(data-bind='foreach: playlists')
+        .search-panel
+          .search-input-wrapper
+            i.glyphicon.glyphicon-search
+            input.search-input(type='text', data-bind='event: { "keyup": $root.setSearchKeyword }')        
+        .list(data-bind='foreach: $root.filterData($root.playlists())')
           .playlist(data-bind='text: $data.name, click: $root.openPlaylist')
 
       .view.view-visible#now-playing(data-bind='css: { "view-visible": currentView() == "now-playing"}')

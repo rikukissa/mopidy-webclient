@@ -44,18 +44,20 @@ class ViewModel
 
     @defaultAlbumArt = "../img/domo.jpg"
   
+    @searchKeyword = ko.observable ''
+
   # View Changes
 
-  setView: (viewName) => () ->
+  setView: (viewName) => () =>
     @currentView viewName
     @snapper.close()
+    @searchKeyword ''
 
   enterPlayQueue: =>
     @load(mopidy.tracklist.getTracks()
       .then (tracks) =>
         @queuedTracks tracks
-        @currentView 'play-queue'
-        @snapper.close()
+        @setView('play-queue')()
         @setScrollPosition()
     )
 
@@ -64,6 +66,7 @@ class ViewModel
     return unless $currentTrack.length > 0
     $('#play-queue .playlist-tracks')
       .scrollTop $currentTrack.offset().top - $currentTrack.height() * 2
+  
   setTrack: (track) ->
     @currentTrack track
 
@@ -72,6 +75,20 @@ class ViewModel
     , =>
       @albumArt null
   
+  filterData: (data) =>
+    return _.filter data, (item) =>
+      regex = new RegExp(@searchKeyword(), 'i')
+      return true if regex.test item.name
+
+      return false if not item.artists? or item.artists.length == 0
+      for artist in item.artists
+        return true if regex.test artist.name
+      
+      false
+
+  setSearchKeyword: (obj, event) =>
+    @searchKeyword $(event.target).val()
+
   toggleSidebar: =>
     if @snapper.state().state is "left"
       @snapper.close()
@@ -80,7 +97,7 @@ class ViewModel
 
   openPlaylist: (playlist) =>
     @currentPlaylist playlist
-    @currentView "playlist"
+    @setView("playlist")()
   
   playTrack: (track) =>
     
