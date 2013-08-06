@@ -37,7 +37,7 @@ class ViewModel
     @currentView  = ko.observable "now-playing"
     @albumArt     = ko.observable null
     @loading      = ko.observable true
-    
+    @state        = ko.observable 'stopped'
     @playlists       = ko.observableArray []
     @currentPlaylist = ko.observable null
     @queuedTracks    = ko.observableArray []
@@ -99,10 +99,16 @@ class ViewModel
     @currentPlaylist playlist
     @setView("playlist")()
   
+  togglePlayState: ->
+    @load mopidy.playback.pause() if @state() == "playing"
+    @load mopidy.playback.play() if @state() == "paused"
+      
+  setState: (state) ->
+    @state state
+
   playTrack: (track) =>
-    
-    @load(mopidy.playback.getCurrentTlTrack() # Get current track
-      .then (tlTrack) -> # Get the index of the current track
+    @load(mopidy.playback.getCurrentTlTrack()
+      .then (tlTrack) ->
         mopidy.tracklist.index(tlTrack)
       .then (index) ->
         mopidy.tracklist.add([track], index + 1)
@@ -137,19 +143,24 @@ $ ->
   
   viewModel = new ViewModel snapper
 
+  # mopidy.on(console.log.bind(console))
   mopidy.on 'event:trackPlaybackStarted', (data) ->
     viewModel.setTrack data.tl_track.track
+  
+  mopidy.on 'event:playbackStateChanged', (data) ->
+    viewModel.state data.new_state
 
   mopidy.on 'state:online', ->
-    viewModel.load(mopidy.playback.getCurrentTrack()).then (track) ->
-      viewModel.setTrack track
-    
-    viewModel.load(mopidy.playlists.getPlaylists())
-      .then (playlists) -> 
+    viewModel.load(mopidy.playback.getState()
+      .then (state)->
+        viewModel.setState state
+        mopidy.playback.getCurrentTrack()
+      .then (track) ->
+        viewModel.setTrack track
+        mopidy.playlists.getPlaylists()
+      .then (playlists) ->
         viewModel.playlists playlists
-
+    )
 
   FastClick document.body
-
-
   ko.applyBindings viewModel

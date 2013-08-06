@@ -84,8 +84,8 @@ html
             .controls
               .control-btn(data-bind='click: $root.playPrevious')
                 i.glyphicon.glyphicon-step-backward
-              .control-btn
-                i.glyphicon.glyphicon-play
+              .control-btn(data-bind='click: $root.togglePlayState')
+                i.glyphicon(data-bind='css: { "glyphicon-play": $root.state() == "paused", "glyphicon-pause": $root.state() == "playing" }')
               .control-btn(data-bind='click: $root.playNext')
                 i.glyphicon.glyphicon-step-forward
         
