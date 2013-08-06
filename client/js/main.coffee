@@ -1,36 +1,31 @@
-Q = require 'q'
-$ = require 'jquery'
-_ = require 'underscore'
-ko = require 'knockout'
-url = require 'url'
-Snap = require 'snap'
-attachFastClick = require 'fastclick'
+Q         = require 'q'
+$         = require 'jquery'
+_         = require 'underscore'
+ko        = require 'knockout'
+url       = require 'url'
+Snap      = require 'snap'
+FastClick = require 'fastclick'
 
-class LastFMApiRequest
-  constructor: ->
-    @href = 'http://ws.audioscrobbler.com/2.0/'
-    @pathname = '/2.0'
-    @protocol = 'http'
-    @hostname = 'ws.audioscrobbler.com'
-    @query =
-      method: 'album.getinfo'
-      format: 'json'
-      api_key: '9c7fbd7c48b7b59a77d99b987ca3a163'
-
+lastFMAPIKey = '9c7fbd7c48b7b59a77d99b987ca3a163'
 
 getAlbumArt = (artist, album) ->
   deferred = Q.defer()
 
-  apiUrl = new LastFMApiRequest
-  apiUrl.query.artist = artist
-  apiUrl.query.album = album
-
-  $.getJSON(url.format apiUrl)
-    .done (data) ->     
-      return deferred.reject new Error('Album not found') unless data.album?
-      unless data.album.image[data.album.image.length - 1]['#text']
-        return deferred.reject new Error('Image not found')
-      return deferred.resolve data.album.image[data.album.image.length - 1]['#text']
+  $.ajax(
+    url: 'http://ws.audioscrobbler.com/2.0/'
+    type: 'GET'
+    data:
+      method: 'album.getinfo'
+      artist: artist
+      album: album
+      api_key: lastFMAPIKey
+      format: 'json'
+  ).done((data)->    
+    return deferred.reject new Error('Album not found', data) unless data.album?
+    unless data.album.image[data.album.image.length - 1]['#text']
+      return deferred.reject new Error('Image not found')
+    return deferred.resolve data.album.image[data.album.image.length - 1]['#text']
+  ).fail -> deferred.reject new Error('XHR error')
   deferred.promise
 
 mopidy = new Mopidy
@@ -137,7 +132,7 @@ $ ->
         viewModel.playlists playlists
 
 
-  attachFastClick document.body
+  FastClick document.body
 
 
   ko.applyBindings viewModel
