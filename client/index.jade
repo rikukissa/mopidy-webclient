@@ -85,24 +85,32 @@ html
 
       .view.view-visible#search(data-bind='css: { "view-visible": currentView() == "search"}')
         .spotify-search-header
-          .spotify-search-tab
+          .spotify-search-tab(data-bind='css: {"tab-selected": $root.currentTab() == "artists"}')
             .spotify-search-tab-content(data-bind='click: $root.setTab("artists")')
               i.glyphicon.glyphicon-search
               span Artists
-          .spotify-search-tab
+          .spotify-search-tab(data-bind='css: {"tab-selected": $root.currentTab() == "albums"}')
             .spotify-search-tab-content(data-bind='click: $root.setTab("albums")')
               i.glyphicon.glyphicon-search
               span Albums
-          .spotify-search-tab
+          .spotify-search-tab(data-bind='css: {"tab-selected": $root.currentTab() == "tracks"}')
             .spotify-search-tab-content(data-bind='click: $root.setTab("tracks")')
               i.glyphicon.glyphicon-search
               span Tracks
               
         .tab-content(data-bind='css: {"tab-content-visible": $root.currentTab() == "artists"}')
           .list(data-bind='foreach: $root.searchResults.artists')
-                 
+             .track
+                span(data-bind='text: $data.name')
+
         .tab-content(data-bind='css: {"tab-content-visible": $root.currentTab() == "albums"}')
           .list(data-bind='foreach: $root.searchResults.albums')         
+            .track
+              .track-artist(data-bind='foreach: $data.artists')
+                // ko if: $index() == 0
+                span(data-bind='text: $data.name')
+                // /ko
+              .track-title(data-bind='text: $data.name')             
         
         .tab-content(data-bind='css: {"tab-content-visible": $root.currentTab() == "tracks"}')
           .list(data-bind='foreach: $root.searchResults.tracks')

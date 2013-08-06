@@ -143,6 +143,7 @@ html, body
   height 40px
   margin-top 7px
   margin-bottom -4px
+
 .spotify-search-tab
   width 33.3%
   height 35px
@@ -150,7 +151,10 @@ html, body
   padding 0 3px
   line-height 35px
   text-align center
-
+  &.tab-selected
+    .spotify-search-tab-content
+      background #777
+      color #111
 .spotify-search-tab-content
   width 100%
   height 35px
@@ -160,6 +164,7 @@ html, body
   i
     vertical-align middle
     margin-right 5px
+
 .spotify-search-input
   width 100%
   height 30px
@@ -170,7 +175,10 @@ html, body
   border-top 1px solid rgba(0, 0, 0, 0.3)
   border-left 1px solid rgba(0, 0, 0, 0.3)
   box-shadow inset 2px 2px 2px rgba(0, 0, 0, 0.15)
-
+.tab-content
+  display none
+.tab-content-visible
+  display block
 .list
   border-top 1px solid rgba(255,255,255,0.1)
 
