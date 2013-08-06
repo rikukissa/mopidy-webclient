@@ -4,7 +4,8 @@ html
     title Domo the awesome music player
     link(rel='stylesheet', href='css/style.css')
     meta(name='viewport', content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no')
-    meta(name='apple-mobile-web-app-capable', content='yes')      
+    meta(name='apple-mobile-web-app-capable', content='yes')
+    link(rel='icon', type='image/png', href='img/favicon.png')  
     script(src='http://musicbox.local/mopidy/mopidy.min.js')
     script(src='js/bundle.js')
   body
@@ -79,7 +80,6 @@ html
 
       #footer
         .view-footer.footer-visible
-          //- (data-bind='css: { "footer-visible": currentView() == "now-playing"}')
           #controls
             .controls
               .control-btn(data-bind='click: $root.playPrevious')
