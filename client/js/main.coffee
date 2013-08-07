@@ -28,8 +28,7 @@ getAlbumArt = (artist, album) ->
   ).fail -> deferred.reject new Error('XHR error')
   deferred.promise
 
-mopidy = new Mopidy
-  webSocketUrl: "ws://musicbox.local:6680/mopidy/ws/"
+mopidy = new Mopidy()
 
 class ViewModel
   constructor: (@snapper) ->
@@ -100,11 +99,12 @@ class ViewModel
   setTrack: (track) ->
     @currentTrack track
 
-    getAlbumArt(track.artists[0].name, track.album.name).then (imageUrl) =>
-      @albumArt imageUrl
-    , =>
-      @albumArt null
-  
+    if track?
+      getAlbumArt(track.artists[0].name, track.album.name).then (imageUrl) =>
+        @albumArt imageUrl
+      , =>
+        @albumArt null
+    
   filterData: (data) =>
     return _.filter data, (item) =>
       regex = new RegExp(@searchKeyword(), 'i')
@@ -137,15 +137,19 @@ class ViewModel
     @state state
 
   playTrack: (track) =>
-    @load(mopidy.playback.getCurrentTlTrack()
-      .then (tlTrack) ->
-        mopidy.tracklist.index(tlTrack)
-      .then (index) ->
-        mopidy.tracklist.add([track], index + 1)
+    if @currentTrack()?
+      return @load(mopidy.playback.getCurrentTlTrack()
+        .then (tlTrack) ->
+          mopidy.tracklist.index(tlTrack)
+        .then (index) ->
+          mopidy.tracklist.add([track], index + 1)
+        .then (tlTracks) ->
+          mopidy.playback.play(tlTracks[0])
+      )
+    @load(mopidy.tracklist.add([track])
       .then (tlTracks) ->
         mopidy.playback.play(tlTracks[0])
     )
-
   load: (promise) ->
     deferred = Q.defer()
     @loading true
@@ -165,7 +169,7 @@ class ViewModel
     return "url(#{@albumArt()})"
 
   isCurrentTrack: (track) =>
-    @currentTrack().uri == track.uri
+    if @currentTrack()? then @currentTrack().uri == track.uri else false
 
   submitSearch: (viewModel, event) ->
     mopidy.library.search(any: $(event.target).val())
@@ -181,7 +185,7 @@ $ ->
   
   viewModel = new ViewModel snapper
 
-  # mopidy.on(console.log.bind(console))
+  #mopidy.on(console.log.bind(console))
   mopidy.on 'event:trackPlaybackStarted', (data) ->
     viewModel.setTrack data.tl_track.track
   mopidy.on 'event:playbackStateChanged', (data) ->
