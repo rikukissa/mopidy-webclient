@@ -33,7 +33,7 @@ mopidy = new Mopidy
 class ViewModel
   constructor: (@snapper) ->
     @currentTrack = ko.observable null
-    @currentView  = ko.observable "search"
+    @currentView  = ko.observable "now-playing"
     @currentTab   = ko.observable "artists"
     @albumArt     = ko.observable null
     @loading      = ko.observable true
