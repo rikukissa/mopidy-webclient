@@ -34,7 +34,7 @@ transmogrifyCoffee = (debug) ->
 
 transmogrifyJade = (file) ->
   james.read(file)
-    .transform(jade)
+    .transform(jade(pretty: true))
     .write(file
       .replace('client', 'public')
       .replace('.jade', '.html'))
