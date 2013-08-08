@@ -25,7 +25,7 @@ html
         .sidebar-btn(data-bind='click: $root.toggleSidebar')
           i.glyphicon.glyphicon-align-justify
 
-        .view-header(data-bind='css: { "header-visible": currentView() == "now-playing" || currentView() == "play-queue" || currentView() == "playlists"}')
+        .view-header(data-bind='css: { "header-visible": currentView() == "now-playing" || currentView() == "play-queue" || currentView() == "playlists"}')
           .track-info(data-bind='with: currentTrack, click: setView("now-playing")')
             .track-info-item.track-info-title(data-bind='text: $data.name')
             .track-info-item.track-info-artist(data-bind='foreach: $data.artists')

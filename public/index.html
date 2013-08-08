@@ -21,7 +21,7 @@
     <div id="main">
       <div id="header">
         <div data-bind="click: $root.toggleSidebar" class="sidebar-btn"><i class="glyphicon glyphicon-align-justify"></i></div>
-        <div data-bind="css: { &quot;header-visible&quot;: currentView() == &quot;now-playing&quot; || currentView() == &quot;play-queue&quot; || currentView() == &quot;playlists&quot;}" class="view-header">
+        <div data-bind="css: { &quot;header-visible&quot;: currentView() == &quot;now-playing&quot; || currentView() == &quot;play-queue&quot; || currentView() == &quot;playlists&quot;}" class="view-header">
           <div data-bind="with: currentTrack, click: setView(&quot;now-playing&quot;)" class="track-info">
             <div data-bind="text: $data.name" class="track-info-item track-info-title"></div>
             <div data-bind="foreach: $data.artists" class="track-info-item track-info-artist">
