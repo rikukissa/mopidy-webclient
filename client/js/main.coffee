@@ -99,12 +99,16 @@ class ViewModel
   setTrack: (track) ->
     @currentTrack track
 
-    if track?
-      getAlbumArt(track.artists[0].name, track.album.name).then (imageUrl) =>
-        @albumArt imageUrl
-      , =>
-        @albumArt null
-    
+    getAlbumArt(track.artists[0].name, track.album.name).then (imageUrl) =>
+      @albumArt imageUrl
+    , =>
+      @albumArt null
+  
+  setTrackIndex: (index = 0)->
+    mopidy.tracklist.getTracks()
+      .then (tracks) =>
+        @setTrack tracks[index] if tracks[index]?
+
   filterData: (data) =>
     return _.filter data, (item) =>
       regex = new RegExp(@searchKeyword(), 'i')
@@ -130,8 +134,9 @@ class ViewModel
     @setView("playlist")()
   
   togglePlayState: ->
-    @load mopidy.playback.pause() if @state() == "playing"
-    @load mopidy.playback.play() if @state() == "paused"
+    return @load mopidy.playback.pause() if @state() == "playing"
+    if @state() == "paused" || @state() == "stopped"
+      @load mopidy.playback.play()
       
   setState: (state) ->
     @state state
@@ -178,6 +183,9 @@ class ViewModel
         @searchResults.albums searchResult.albums
         @searchResults.tracks searchResult.tracks
 
+  createPlayQueue: (playlists) ->
+    mopidy.tracklist.add playlists[0].tracks
+
 $ ->
   snapper = new Snap
     element: document.getElementById 'main'
@@ -195,12 +203,19 @@ $ ->
     viewModel.load(mopidy.playback.getState()
       .then (state)->
         viewModel.setState state
-        mopidy.playback.getCurrentTrack()
-      .then (track) ->
-        viewModel.setTrack track
         mopidy.playlists.getPlaylists()
       .then (playlists) ->
         viewModel.playlists playlists
+        mopidy.tracklist.getLength()
+        .then (trackListLength) -> 
+          if trackListLength is 0 && playlists.length > 0
+            return viewModel.createPlayQueue(playlists)
+              .then ->
+                mopidy.playback.getCurrentTrack()
+          mopidy.playback.getCurrentTrack()
+      .then (track) ->  
+        return viewModel.setTrack track if track?
+        viewModel.setTrackIndex 0
     )
 
   FastClick document.body
