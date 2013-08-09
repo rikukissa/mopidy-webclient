@@ -28,8 +28,8 @@ getAlbumArt = (artist, album) ->
   ).fail -> deferred.reject new Error('XHR error')
   deferred.promise
 
-mopidy = new Mopidy
-  webSocketUrl: "ws://raspberrypi:6680/mopidy/ws/"
+mopidy = new Mopidy()
+
 class ViewModel
   constructor: (@snapper) ->
     @currentTrack = ko.observable null
