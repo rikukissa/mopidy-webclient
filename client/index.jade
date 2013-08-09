@@ -150,7 +150,7 @@ html
               .control-btn(data-bind='click: $root.playPrevious')
                 i.glyphicon.glyphicon-step-backward
               .control-btn(data-bind='click: $root.togglePlayState')
-                i.glyphicon(data-bind='css: { "glyphicon-play": $root.state() == "paused" || $root.state() == "stopped", "glyphicon-pause": $root.state() == "playing" }')
+                i.glyphicon(data-bind='css: { "glyphicon-play": $root.state() == "paused"||$root.state() == "stopped", "glyphicon-pause": $root.state() == "playing" }')
               .control-btn(data-bind='click: $root.playNext')
                 i.glyphicon.glyphicon-step-forward
         
