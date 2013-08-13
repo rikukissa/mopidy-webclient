@@ -6,30 +6,11 @@ url       = require 'url'
 Snap      = require 'snap'
 FastClick = require 'fastclick'
 
-lastFMAPIKey = '9c7fbd7c48b7b59a77d99b987ca3a163'
-
-getAlbumArt = (artist, album) ->
-  deferred = Q.defer()
-
-  $.ajax(
-    url: 'http://ws.audioscrobbler.com/2.0/'
-    type: 'GET'
-    data:
-      method: 'album.getinfo'
-      artist: artist
-      album: album
-      api_key: lastFMAPIKey
-      format: 'json'
-  ).done((data)->    
-    return deferred.reject new Error('Album not found', data) unless data.album?
-    unless data.album.image[data.album.image.length - 1]['#text']
-      return deferred.reject new Error('Image not found')
-    return deferred.resolve data.album.image[data.album.image.length - 1]['#text']
-  ).fail -> deferred.reject new Error('XHR error')
-  deferred.promise
+utils     = require './utils.coffee'
 
 mopidy = new Mopidy
   webSocketUrl: "ws://raspberrypi:6680/mopidy/ws/"
+
 class ViewModel
   constructor: (@snapper) ->
     @currentTrack = ko.observable null
@@ -99,7 +80,7 @@ class ViewModel
   setTrack: (track) ->
     @currentTrack track
 
-    getAlbumArt(track.artists[0].name, track.album.name).then (imageUrl) =>
+    utils.getAlbumArt(track.artists[0].name, track.album.name).then (imageUrl) =>
       @albumArt imageUrl
     , =>
       @albumArt null
