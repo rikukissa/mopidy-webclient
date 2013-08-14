@@ -6,9 +6,10 @@ url       = require 'url'
 Snap      = require 'snap'
 FastClick = require 'fastclick'
 
+Player    = require './player.coffee'
 utils     = require './utils.coffee'
 
-mopidy = new Mopidy
+player = new Player
   webSocketUrl: "ws://raspberrypi:6680/mopidy/ws/"
 
 class ViewModel
@@ -47,7 +48,7 @@ class ViewModel
     @currentTab tabName
 
   enterPlayQueue: =>
-    @load(mopidy.tracklist.getTracks()
+    @load(player.tracklist.getTracks()
       .then (tracks) =>
         @queuedTracks tracks
         @setView('play-queue')()
@@ -55,14 +56,14 @@ class ViewModel
     )
   enterAlbumInfo: (album) =>
     @currentAlbum album
-    mopidy.library.search(album: album.name, artist: @currentArtist().name)
+    player.library.search(album: album.name, artist: @currentArtist().name)
       .then ([fileSearch, searchResult]) =>
         @currentTracks searchResult.tracks
         @setView('album')()
 
   enterArtistInfo: (artist) =>
     @currentArtist artist
-    mopidy.library.search(artist: artist.name)
+    player.library.search(artist: artist.name)
       .then ([fileSearch, searchResult]) =>
         @currentAlbums searchResult.albums
         @setView('artist')()
@@ -79,14 +80,15 @@ class ViewModel
   
   setTrack: (track) ->
     @currentTrack track
-
-    utils.getAlbumArt(track.artists[0].name, track.album.name).then (imageUrl) =>
-      @albumArt imageUrl
-    , =>
-      @albumArt null
+    return unless track?
+    utils.getAlbumArt(track.artists[0].name, track.album.name)
+      .then (imageUrl) =>
+        @albumArt imageUrl
+      , =>
+        @albumArt null
   
   setTrackIndex: (index = 0)->
-    mopidy.tracklist.getTracks()
+    player.tracklist.getTracks()
       .then (tracks) =>
         @setTrack tracks[index] if tracks[index]?
 
@@ -115,26 +117,26 @@ class ViewModel
     @setView("playlist")()
   
   togglePlayState: ->
-    return @load mopidy.playback.pause() if @state() == "playing"
+    return @load player.playback.pause() if @state() == "playing"
     if @state() == "paused" || @state() == "stopped"
-      @load mopidy.playback.play()
+      @load player.playback.play()
       
   setState: (state) ->
     @state state
 
   playTrack: (track) =>
     if @currentTrack()?
-      return @load(mopidy.playback.getCurrentTlTrack()
+      return @load(player.playback.getCurrentTlTrack()
         .then (tlTrack) ->
-          mopidy.tracklist.index(tlTrack)
+          player.tracklist.index(tlTrack)
         .then (index) ->
-          mopidy.tracklist.add([track], index + 1)
+          player.tracklist.add([track], index + 1)
         .then (tlTracks) ->
-          mopidy.playback.play(tlTracks[0])
+          player.playback.play(tlTracks[0])
       )
-    @load(mopidy.tracklist.add([track])
+    @load(player.tracklist.add([track])
       .then (tlTracks) ->
-        mopidy.playback.play(tlTracks[0])
+        player.playback.play(tlTracks[0])
     )
   load: (promise) ->
     deferred = Q.defer()
@@ -145,10 +147,10 @@ class ViewModel
     deferred.promise
 
   playNext: ->  
-    @load mopidy.playback.next()
+    @load player.playback.next()
 
   playPrevious: ->
-    @load mopidy.playback.previous()
+    @load player.playback.previous()
 
   getAlbumBackground: ->
     return "url(#{@defaultAlbumArt})" unless @albumArt()?
@@ -158,14 +160,11 @@ class ViewModel
     if @currentTrack()? then @currentTrack().uri == track.uri else false
 
   submitSearch: (viewModel, event) ->
-    mopidy.library.search(any: $(event.target).val())
+    player.library.search(any: $(event.target).val())
       .then ([fileSearch, searchResult]) =>
         @searchResults.artists searchResult.artists
         @searchResults.albums searchResult.albums
         @searchResults.tracks searchResult.tracks
-
-  createPlayQueue: (playlists) ->
-    mopidy.tracklist.add playlists[0].tracks
 
 $ ->
   snapper = new Snap
@@ -174,30 +173,20 @@ $ ->
   
   viewModel = new ViewModel snapper
 
-  #mopidy.on(console.log.bind(console))
-  mopidy.on 'event:trackPlaybackStarted', (data) ->
+  player.on 'event:trackPlaybackStarted', (data) ->
     viewModel.setTrack data.tl_track.track
-  mopidy.on 'event:playbackStateChanged', (data) ->
+  
+  player.on 'event:playbackStateChanged', (data) ->
     viewModel.state data.new_state
 
-  mopidy.on 'state:online', ->
-    viewModel.load(mopidy.playback.getState()
-      .then (state)->
-        viewModel.setState state
-        mopidy.playlists.getPlaylists()
-      .then (playlists) ->
-        viewModel.playlists playlists
-        mopidy.tracklist.getLength()
-        .then (trackListLength) -> 
-          if trackListLength is 0 && playlists.length > 0
-            return viewModel.createPlayQueue(playlists)
-              .then ->
-                mopidy.playback.getCurrentTrack()
-          mopidy.playback.getCurrentTrack()
-      .then (track) ->  
-        return viewModel.setTrack track if track?
-        viewModel.setTrackIndex 0
-    )
-
+  viewModel.load(player.initialize()
+    .then ([state, playlists, currentTrack]) ->
+      viewModel.setState state
+      viewModel.playlists playlists
+      viewModel.setTrack currentTrack
+  ).fail ->
+    console.log arguments
+    
   FastClick document.body
+
   ko.applyBindings viewModel
