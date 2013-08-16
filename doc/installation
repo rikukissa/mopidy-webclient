@@ -1,0 +1,68 @@
+Download the latest Raspbian "wheezy" image from http://www.raspberrypi.org/downloads
+
+Flash the OS image to your SD card. See http://elinux.org/RPi_Easy_SD_Card_Setup for help
+(Gives an error after ~10 minutes on Mac os x. The card works anyways)
+
+Connect screen, keyboard, SD card and power to your RasPi.
+
+After a while, Raspberry config should appear.
+
+Expand Filesystem -> Ok
+Advanced options -> SSH -> Enable -> Ok
+Finish -> Yes
+
+RasPi reboots now
+
+Default login credentials are:
+  login: pi
+  password: raspberry
+
+Find out the IP-address of your RasPi
+  login
+  ifconfig
+  inet addr:***.***.***.*** <- RasPi's IP-address
+
+Connect to your RasPi with SSH
+
+turn on IPv6 support:
+  sudo modprobe ipv6
+  echo ipv6 | sudo tee -a /etc/modules
+
+install mopidy:
+  wget -q -O - http://apt.mopidy.com/mopidy.gpg | sudo apt-key add -
+  sudo wget -q -O /etc/apt/sources.list.d/mopidy.list http://apt.mopidy.com/mopidy.list
+  sudo apt-get update
+  sudo apt-get install mopidy
+
+configure mopidy:
+  
+  Create config file for mopidy
+
+  mkdir -p ~/.config/mopidy
+  nano ~/.config/mopidy/mopidy.conf
+
+  Paste configuration to the file and insert your own values
+
+  [spotify]
+  username = username (example 1133600000)
+  password = password
+
+  [local]
+  enabled = false
+
+  [scrobbler]
+  username = username
+  password = password
+
+  [http]
+  hostname = ::
+  static_dir = /home/pi/mopidy-webclient/public/
+
+install mopidy webclient:
+cd ~/
+git clone git@github.com:rikukissa/mopidy-webclient.git
+
+start mopidy and the webclient:
+mopidy
+
+
